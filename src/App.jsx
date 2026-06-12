@@ -20,7 +20,6 @@ function App() {
 
   const [unlocked, setUnlocked] = useState(false);
   const [password, setPassword] = useState("");
-
   const [showIntro, setShowIntro] = useState(true);
 
   const [current, setCurrent] = useState(0);
@@ -32,16 +31,22 @@ function App() {
     photo9, photo10, photo11, photo12
   ];
 
-  // 🎥 CINEMATIC INTRO
+  // INTRO
   useEffect(() => {
-    const t = setTimeout(() => {
-      setShowIntro(false);
-    }, 3000);
-
+    const t = setTimeout(() => setShowIntro(false), 2000);
     return () => clearTimeout(t);
   }, []);
 
-  // 🎵 AUDIO SETUP
+  // AUTO SLIDESHOW
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % photos.length);
+    }, 2800);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // AUDIO
   useEffect(() => {
     audioRef.current = new Audio(song);
     audioRef.current.loop = true;
@@ -51,24 +56,14 @@ function App() {
     if (!audioRef.current) return;
 
     if (audioRef.current.paused) {
-      audioRef.current.volume = 0;
+      audioRef.current.volume = 0.6;
       audioRef.current.play();
-
-      let vol = 0;
-      const fade = setInterval(() => {
-        if (vol < 0.6) {
-          vol += 0.05;
-          audioRef.current.volume = vol;
-        } else {
-          clearInterval(fade);
-        }
-      }, 200);
     } else {
       audioRef.current.pause();
     }
   };
 
-  // 🔐 PASSWORD CHECK
+  // PASSWORD
   const checkPassword = () => {
     if (password === "1406") {
       setUnlocked(true);
@@ -77,7 +72,7 @@ function App() {
     }
   };
 
-  // 📱 SWIPE GALLERY
+  // SWIPE
   const handleTouchStart = (e) => {
     setStartX(e.touches[0].clientX);
   };
@@ -92,7 +87,7 @@ function App() {
     }
   };
 
-  // 💖 HEART EFFECT
+  // HEART EFFECT
   const createHeart = (e) => {
     const heart = document.createElement("div");
     heart.innerHTML = "💖";
@@ -104,19 +99,18 @@ function App() {
     heart.style.pointerEvents = "none";
 
     document.body.appendChild(heart);
-
     setTimeout(() => heart.remove(), 1200);
   };
 
-  // 🌙 INTRO SCREEN
+  // INTRO SCREEN
   if (showIntro) {
     return (
-      <div className="h-screen flex items-center justify-center bg-black">
+      <div style={styles.center}>
         <motion.h1
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 2 }}
-          className="text-4xl text-pink-400"
+          style={{ color: "#ff4da6", textAlign: "center" }}
         >
           💖 Our Love Story Begins 💖
         </motion.h1>
@@ -124,24 +118,20 @@ function App() {
     );
   }
 
-  // 🔐 LOCK SCREEN
+  // LOCK SCREEN
   if (!unlocked) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-black text-white">
-        <h1 className="text-3xl text-pink-400">Enter Secret Code 💖</h1>
+      <div style={styles.center}>
+        <h1 style={{ color: "#ff4da6" }}>Enter Secret Code 💖</h1>
 
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mt-4 p-2 rounded text-black"
-          placeholder="Enter password"
+          style={styles.input}
         />
 
-        <button
-          onClick={checkPassword}
-          className="mt-4 bg-pink-500 px-4 py-2 rounded"
-        >
+        <button onClick={checkPassword} style={styles.button}>
           Enter
         </button>
       </div>
@@ -149,32 +139,27 @@ function App() {
   }
 
   return (
-    <div
-      onClick={createHeart}
-      className="min-h-screen overflow-hidden bg-gradient-to-br from-black via-pink-950 to-black text-white relative flex flex-col items-center justify-center px-6 py-10"
-    >
+    <div style={styles.app} onClick={createHeart}>
 
-      {/* AUDIO */}
       <audio ref={audioRef} src={song} loop />
 
       {/* FLOATING HEARTS */}
-      <div className="absolute inset-0 overflow-hidden">
-        {[...Array(15)].map((_, i) => (
+      <div style={styles.hearts}>
+        {[...Array(18)].map((_, i) => (
           <motion.div
             key={i}
             initial={{ y: "100vh", opacity: 0 }}
             animate={{
               y: "-10vh",
               opacity: [0, 1, 0],
-              x: [0, 30, -30, 0],
+              x: [0, 25, -25, 0],
             }}
             transition={{
               duration: 8 + i,
               repeat: Infinity,
-              delay: i * 0.5,
+              delay: i * 0.3,
             }}
-            className="absolute text-pink-400 text-2xl"
-            style={{ left: `${Math.random() * 100}%` }}
+            style={styles.heart}
           >
             ❤️
           </motion.div>
@@ -182,57 +167,50 @@ function App() {
       </div>
 
       {/* MAIN CARD */}
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="backdrop-blur-lg bg-white/10 border border-pink-500/30 shadow-2xl rounded-3xl p-8 max-w-6xl w-full z-10"
-      >
-        <h1 className="text-5xl md:text-6xl font-bold text-center text-pink-400">
+      <div style={styles.card}>
+        <h1 style={styles.title}>
           Happy Anniversary ❤️
         </h1>
 
-        {/* SLIDESHOW */}
+        {/* SLIDESHOW GRID STYLE (PERFECT ALIGN FIX) */}
         <div
-          className="mt-10 flex justify-center"
+          style={styles.sliderWrap}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
           <motion.img
             key={current}
             src={photos[current]}
-            className="h-96 w-full max-w-md object-cover rounded-3xl shadow-2xl border border-pink-400"
-            initial={{ opacity: 0, scale: 0.8 }}
+            style={styles.image}
+            initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
           />
         </div>
 
-        {/* MESSAGE */}
-        <p className="text-center text-pink-200 mt-6 text-lg">
+        <p style={styles.text}>
           I love you forever ❤️
         </p>
 
-        {/* FINAL */}
-        <div className="text-center mt-16">
-          <p className="text-3xl text-pink-300 font-semibold">
-            I’d choose you in every lifetime ❤️
-          </p>
-          <div className="text-7xl mt-6">💖</div>
+        <p style={styles.subText}>
+          I’d choose you in every lifetime 💖
+        </p>
+
+        <div style={{ fontSize: "50px", textAlign: "center" }}>
+          💖
         </div>
-      </motion.div>
+      </div>
 
       {/* MUSIC BUTTON */}
-      <button
-        onClick={toggleMusic}
-        className="fixed bottom-5 right-5 bg-pink-500 px-4 py-2 rounded-full z-50"
-      >
-        🎵 Play / Pause
+      <button onClick={toggleMusic} style={styles.musicBtn}>
+        🎵 Music
       </button>
 
-      {/* CSS */}
+      {/* ANIMATION */}
       <style>{`
         @keyframes floatUp {
           0% { transform: translateY(0); opacity: 1; }
-          100% { transform: translateY(-100px); opacity: 0; }
+          100% { transform: translateY(-120px); opacity: 0; }
         }
       `}</style>
 
@@ -241,3 +219,113 @@ function App() {
 }
 
 export default App;
+
+/* ================= PERFECT STYLES ================= */
+const styles = {
+  app: {
+    minHeight: "100vh",
+    background: "linear-gradient(to bottom right, black, #2b0018, black)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "20px",
+    position: "relative",
+    overflow: "hidden",
+    color: "white"
+  },
+
+  center: {
+    minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "black",
+    color: "white"
+  },
+
+  card: {
+    width: "100%",
+    maxWidth: "850px",
+    background: "rgba(255,255,255,0.08)",
+    border: "1px solid #ff4da6",
+    borderRadius: "25px",
+    padding: "25px",
+    zIndex: 10,
+    textAlign: "center"
+  },
+
+  title: {
+    color: "#ff4da6",
+    fontSize: "32px",
+    marginBottom: "10px"
+  },
+
+  sliderWrap: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: "20px"
+  },
+
+  image: {
+    height: "450px",
+    width: "100%",
+    maxWidth: "380px",
+    objectFit: "cover",
+    objectPosition: "center",
+    borderRadius: "25px",
+    border: "2px solid #ff4da6",
+    boxShadow: "0 10px 30px rgba(255,77,166,0.3)"
+  },
+
+  text: {
+    marginTop: "15px",
+    fontSize: "18px"
+  },
+
+  subText: {
+    marginTop: "10px",
+    fontSize: "20px",
+    color: "#ffb3d9"
+  },
+
+  input: {
+    padding: "10px",
+    borderRadius: "10px",
+    marginTop: "10px"
+  },
+
+  button: {
+    marginTop: "10px",
+    padding: "10px 20px",
+    background: "#ff4da6",
+    color: "white",
+    border: "none",
+    borderRadius: "10px"
+  },
+
+  musicBtn: {
+    position: "fixed",
+    bottom: "20px",
+    right: "20px",
+    background: "#ff4da6",
+    color: "white",
+    border: "none",
+    padding: "12px 16px",
+    borderRadius: "25px"
+  },
+
+  hearts: {
+    position: "absolute",
+    inset: 0,
+    overflow: "hidden"
+  },
+
+  heart: {
+    position: "absolute",
+    color: "#ff4da6",
+    fontSize: "20px"
+  }
+};

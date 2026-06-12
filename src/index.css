@@ -1,6 +1,27 @@
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: black;
+  padding: 0;
+  background: linear-gradient(to bottom right, black, #2b0018, black);
   color: white;
+  font-family: Arial, sans-serif;
+}
+
+/* MAIN APP WRAPPER */
+.app {
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+}
+
+/* IMAGE FIX */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 20px;
 }
